@@ -1,0 +1,60 @@
+
+
+# SSH into remote VM
+ssh login@35.79.12.16
+
+# Update package index
+sudo apt update
+
+# Install PostgreSQL server and contrib package
+sudo apt install postgresql postgresql-contrib -y
+
+# Switch to postgres user and enter PostgreSQL shell
+sudo -i -u postgres
+psql
+
+# Create a user with password (replace 'username' and 'password')
+CREATE USER prokhorind WITH PASSWORD 'PASSWORD';
+
+# Grant privileges (for a specific database or globally)
+ALTER USER username WITH SUPERUSER;
+
+CREATE DATABASE mydb OWNER prokhorind;
+
+
+# Exit PostgreSQL
+\q
+exit
+
+# login with GCP account
+gcloud auth login
+
+
+# Allow remote connections by modifying the listen address
+sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/" /etc/postgresql/*/main/postgresql.conf
+
+# Allow connections in pg_hba.conf (IPv4 host, md5 auth)
+echo "host    all             all             0.0.0.0/0               md5" | \
+    tee -a /etc/postgresql/*/main/pg_hba.conf
+
+# Restart PostgreSQL service
+sudo systemctl restart postgresql
+
+# Check PostgreSQL status
+sudo systemctl status postgresql
+
+# Add a GCP firewall rule to allow traffic on PostgreSQL's default port (5432)
+# Replace 'YOUR_INSTANCE_NAME' and 'YOUR_PROJECT_ID' accordingly
+gcloud compute firewall-rules create allow-postgres \
+    --direction=INGRESS \
+    --priority=1000 \
+    --network=default \
+    --action=ALLOW \
+    --rules=tcp:5432 \
+    --source-ranges=0.0.0.0/0 \
+    --target-tags=allow-postgres
+
+# Optional: Assign the firewall tag to your VM instance (replace 'YOUR_INSTANCE_NAME' and 'YOUR_PROJECT_ID')
+gcloud compute instances add-tags YOUR_INSTANCE_NAME \
+    --tags=allow-postgres \
+    --zone=YOUR_ZONE
