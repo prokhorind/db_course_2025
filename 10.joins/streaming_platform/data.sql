@@ -18,6 +18,12 @@ VALUES
 ('Titanic', 'Romance', 1997),
 ('Matrix', 'Sci-Fi', 1999);
 
+-- FOR RIGHT JOIN
+INSERT INTO movies (title, genre, release_year)
+VALUES
+('Avatar', 'Sci-Fi', 2009),
+('Gladiator', 'Action', 2000);
+
 -- WATCH HISTORY
 INSERT INTO watch_history (user_id, movie_id, watch_date, rating)
 VALUES
